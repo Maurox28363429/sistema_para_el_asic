@@ -12,30 +12,36 @@
         />
 
         <q-toolbar-title>
-          Quasar App
+          <q-icon
+            @click="router.go(-1)"
+            name="arrow_back"
+            size="md"
+            color="white"
+            class="cursor-pointer"
+          />
+          Volver
         </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <div style="font-size: 2em; font-weight: bold">ASIC App</div>
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
+        <q-item-label header> Acciones </q-item-label>
+        <ul class="lista_menu">
+          <li v-for="(link, index) of essentialLinks" :key="index">
+            <router-link :to="link.link">
+              <q-icon size="md" :name="link.icon" />
+              {{ link.title }}
+            </router-link>
+          </li>
 
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
+          <li @click="logout()">
+            <q-icon size="md" name="logout" />
+            Salir
+          </li>
+        </ul>
       </q-list>
     </q-drawer>
 
@@ -44,73 +50,62 @@
     </q-page-container>
   </q-layout>
 </template>
+<style scoped>
+.lista_menu {
+  list-style: none;
+  padding: 1em;
+  margin: 0;
+}
+.lista_menu * {
+  color: black;
+  text-decoration: none !important;
+}
+.lista_menu li {
+  padding: 0.5em;
+  border-radius: 0.5em;
+  margin: 0.5em 0;
+  cursor: pointer;
+}
+.lista_menu li:hover {
+  background: #eee;
+}
+</style>
+<script setup>
+import { ref } from "vue";
+import { logoutLocal, userLocal } from "../composables/localStorage";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
-<script>
-import { defineComponent, ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
-
-const linksList = [
+var essentialLinks = [
   {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
+    title: "Personal",
+    caption: "Administrar usuarios y roles",
+    icon: "groups",
+    link: "usuarios",
   },
   {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
+    title: "Documentos",
+    caption: "Administrar y generar documentos",
+    icon: "menu_book",
+    link: "documentos",
   },
   {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
+    title: "Horario laboral",
+    caption: "Administrar permisos, horarios y turnos",
+    icon: "calendar_month",
+    link: "horarios",
   },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-]
-
-export default defineComponent({
-  name: 'MainLayout',
-
-  components: {
-    EssentialLink
-  },
-
-  setup () {
-    const leftDrawerOpen = ref(false)
-
-    return {
-      essentialLinks: linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
-    }
-  }
-})
+];
+const abrir = (link) => {
+  router.push(link);
+};
+const logout = () => {
+  logoutLocal();
+  window.location.href = "/login";
+};
+const user = ref(userLocal());
+const leftDrawerOpen = ref(false);
+const toggleLeftDrawer = () => {
+  leftDrawerOpen.value = !leftDrawerOpen.value;
+};
 </script>
