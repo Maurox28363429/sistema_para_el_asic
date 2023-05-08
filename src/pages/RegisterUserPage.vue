@@ -20,7 +20,10 @@
         <q-card-section>
           <div align="center">
             <q-icon name="user"></q-icon>
-            <h4>Registrar Usuario</h4>
+            <h4>
+              {{ edit ? "Editar" : "Registrar" }}
+              Usuario
+            </h4>
             <form id="formdata">
               <q-input
                 v-model="nombre"
@@ -73,7 +76,7 @@
                 class="col-12"
                 style="margin-bottom: 1em"
               />
-              <q-file
+              <!-- <q-file
                 label="Subir archivos"
                 outlined
                 dense
@@ -83,18 +86,18 @@
               />
               <div style="text-align: left; font-size: 1.5em">
                 Archivos subidos: {{ files.length }}
-              </div>
+              </div> -->
               <q-btn
                 @click="registerUser"
                 label="Registrar"
-                color="primary"
+                color="green"
                 class="col-12"
                 style="margin: 1em"
               />
               <q-btn
                 @click="cancel"
                 label="Cancelar"
-                color="primary"
+                color="red"
                 class="col-12"
                 style="margin: 1em"
               />
@@ -124,7 +127,9 @@ const cedula = ref("");
 const rif = ref("");
 const role_id = ref("");
 const password = ref("");
-const files = ref([]);
+const edit = ref(false);
+const user_id = ref("");
+//const files = ref([]);
 const roles = [
   { label: "Administrador", value: 1 },
   { label: "Trabajador", value: 2 },
@@ -136,7 +141,7 @@ const json = ref({
   array_files: [],
 });
 const registerUser = async () => {
-  if (files.value.length > 0) {
+  /*   if (files.value.length > 0) {
     for (let i = 0; i < files.value.length; i++) {
       const { data, error2 } = await supabase.storage.createBucket(
         cedula.value
@@ -160,35 +165,97 @@ const registerUser = async () => {
         );
       }
     }
-  }
-  const { error } = await supabase
-    .from("Usuarios")
-    .insert([
-      {
+  } */
+  if (edit.value == false) {
+    const { error } = await supabase
+      .from("Usuarios")
+      .insert([
+        {
+          nombre: nombre.value,
+          apellido: apellido.value,
+          email: email.value,
+          cedula: cedula.value,
+          rif: rif.value,
+          role_id: role_id.value.value,
+          password: password.value,
+        },
+      ])
+      .single();
+    if (error) {
+      Notify.create({
+        message: error.message,
+        color: "red",
+        position: "top",
+        icon: "report_problem",
+      });
+    } else {
+      Notify.create({
+        message: "Usuario registrado con exito",
+        color: "green",
+        position: "top",
+        icon: "check",
+      });
+    }
+  } else {
+    const { error } = await supabase
+      .from("Usuarios")
+      .update({
         nombre: nombre.value,
         apellido: apellido.value,
         email: email.value,
         cedula: cedula.value,
         rif: rif.value,
         role_id: role_id.value.value,
-        json: json.value,
-      },
-    ])
-    .single();
-  if (error) {
-    Notify.create({
-      message: error.message,
-      color: "red",
-      position: "top",
-      icon: "report_problem",
-    });
-  } else {
-    Notify.create({
-      message: "Usuario registrado con exito",
-      color: "green",
-      position: "top",
-      icon: "check",
-    });
+        password: password.value,
+      })
+      .eq("id", user_id.value);
+    if (error) {
+      Notify.create({
+        message: error.message,
+        color: "red",
+        position: "top",
+        icon: "report_problem",
+      });
+    } else {
+      Notify.create({
+        message: "Usuario actualizado con exito",
+        color: "green",
+        position: "top",
+        icon: "check",
+      });
+    }
   }
+};
+
+onMounted(async () => {
+  if (localStorage.getItem("user_id_edit")) {
+    edit.value = true;
+    user_id.value = localStorage.getItem("user_id_edit");
+    localStorage.removeItem("user_id_edit");
+    const { data, error } = await supabase
+      .from("Usuarios")
+      .select("*")
+      .eq("id", user_id.value)
+      .single();
+    if (error) {
+      Notify.create({
+        message: error.message,
+        color: "red",
+        position: "top",
+        icon: "report_problem",
+      });
+    } else {
+      nombre.value = data.nombre;
+      apellido.value = data.apellido;
+      email.value = data.email;
+      cedula.value = data.cedula;
+      rif.value = data.rif;
+      role_id.value = data.role_id;
+      password.value = data.password;
+    }
+  }
+});
+const cancel = () => {
+  document.getElementById("formdata").reset();
 };
 </script>

@@ -1,12 +1,12 @@
 //https://supabase.com/docs/reference/javascript/upsert
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 // Create a single supabase client for interacting with your database
 // url https://lyikdkydcxiukrhkrqwz.supabase.co
 // jwt
 const supabase = createClient(
-  'https://lyikdkydcxiukrhkrqwz.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5aWtka3lkY3hpdWtyaGtycXd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzY0ODY2NjQsImV4cCI6MTk5MjA2MjY2NH0.vXdKg0LU2Lj69lXy0Y7c8oVZBAMZgJFdYJ7KdbDD7nE'
-  )
+  "https://lyikdkydcxiukrhkrqwz.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5aWtka3lkY3hpdWtyaGtycXd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzY0ODY2NjQsImV4cCI6MTk5MjA2MjY2NH0.vXdKg0LU2Lj69lXy0Y7c8oVZBAMZgJFdYJ7KdbDD7nE"
+);
 export default supabase;
 
 //leer informacion
@@ -59,7 +59,6 @@ const { data, error } = await supabase
 }
 */
 
-
 // Insertar datos
 /*
   Codigo
@@ -76,7 +75,6 @@ const { error } = await supabase
   "statusText": "Created"
 }
 */
-
 
 // Actualizar
 

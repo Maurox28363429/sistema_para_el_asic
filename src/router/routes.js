@@ -54,7 +54,11 @@ const routes = [
     name: "editar_user",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/EditarUserPage.vue") },
+      {
+        path: "",
+        props: true,
+        component: () => import("pages/RegisterUserPage.vue"),
+      },
     ],
   },
 

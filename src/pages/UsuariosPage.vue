@@ -55,12 +55,22 @@
                 </td>
                 <td>
                   <q-btn
+                    @click="documentGet(user)"
+                    class="glossy"
+                    rounded
+                    color="green"
+                    style="margin: 1em 0.5em"
+                    label="Constancia"
+                    icon="picture_as_pdf"
+                  />
+                  <q-btn
                     @click="editUser(user)"
                     class="glossy"
                     rounded
                     color="primary"
                     style="margin: 1em 0.5em"
                     label="Editar"
+                    icon="edit"
                   />
                   <q-btn
                     @click="deleteUser(user.id)"
@@ -69,6 +79,7 @@
                     color="red"
                     style="margin: 1em 0.5em"
                     label="Borrar"
+                    icon="delete"
                   />
                 </td>
               </tr>
@@ -93,6 +104,11 @@
         <q-fab-action color="green" icon="add" to="register_user" />
         <q-fab-action color="primary" icon="search" @click="search()" />
         <q-fab-action color="red" icon="restart_alt" @click="refresh()" />
+        <q-fab-action
+          color="green"
+          icon="file_download"
+          @click="exportData()"
+        />
       </q-fab>
     </q-page-sticky>
   </q-page>
@@ -104,6 +120,8 @@ import supabase from "src/supabase";
 import { Notify } from "quasar";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
+import { saveAs } from "file-saver";
+import { baseURL } from "src/boot/axios.js";
 
 const router = useRouter();
 const $q = useQuasar();
@@ -228,5 +246,31 @@ const deleteUser = (id) => {
     .onDismiss(() => {
       // console.log('I am triggered on both OK and Cancel')
     });
+};
+const editUser = (user) => {
+  localStorage.setItem("user_id_edit", user.id);
+  router.push("/editar_user");
+};
+const exportData = async () => {
+  const { data, error } = await supabase.from("Usuarios").select("*").csv();
+
+  if (error) {
+    Notify.create({
+      message: "Compruebe su conexión a internet",
+      color: "red",
+      icon: "report_problem",
+    });
+  } else {
+    Notify.create({
+      message: "Datos exportados correctamente",
+      color: "green",
+      icon: "check",
+    });
+    const blob = new Blob([data], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "data.csv");
+  }
+};
+const documentGet = async (user) => {
+  window.open(baseURL + "asic_constancia/" + user.id, "_blank");
 };
 </script>

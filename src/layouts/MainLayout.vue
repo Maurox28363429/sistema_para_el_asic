@@ -30,12 +30,16 @@
       <q-list>
         <q-item-label header> Acciones </q-item-label>
         <ul class="lista_menu">
-          <li v-for="(link, index) of essentialLinks" :key="index">
-            <router-link :to="link.link">
+          <router-link
+            v-for="(link, index) of essentialLinks"
+            :key="index"
+            :to="link.link"
+          >
+            <li>
               <q-icon size="md" :name="link.icon" />
               {{ link.title }}
-            </router-link>
-          </li>
+            </li>
+          </router-link>
 
           <li @click="logout()">
             <q-icon size="md" name="logout" />
