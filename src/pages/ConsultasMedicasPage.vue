@@ -26,7 +26,7 @@
         <q-card-section>
           <div align="center">
             <q-icon name="user"></q-icon>
-            <h4>Usuarios</h4>
+            <h4>Consultas</h4>
           </div>
         </q-card-section>
 
@@ -37,40 +37,15 @@
             <thead>
               <tr>
                 <th>Nombre</th>
-                <th :class="!$q.screen.lt.md ? '' : 'hide'">Correo</th>
-                <th>Cedula</th>
-                <th :class="!$q.screen.lt.md ? '' : 'hide'">RIF</th>
-                <th>Rol</th>
+                <th>Dirección</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(user, index) of users" :key="index">
-                <td>{{ user.nombre }} {{ user.apellido }}</td>
-                <td :class="!$q.screen.lt.md ? '' : 'hide'">
-                  {{ user.email }}
-                </td>
-                <td>{{ user.cedula }}</td>
-                <td :class="!$q.screen.lt.md ? '' : 'hide'">
-                  {{ user.rif }}
-                </td>
+                <td>{{ user.nombre }}</td>
+                <td>{{ user.direccion }}</td>
                 <td>
-                  <span v-if="user.role_id == 1">Administrador</span>
-                  <span v-if="user.role_id == 2">Trabajador</span>
-                  <span v-if="user.role_id == 3">Paciente</span>
-                  <span v-if="user.role_id == 4">Obreros</span>
-                  <span v-if="user.role_id == 5">Profesional de la salud</span>
-                </td>
-                <td>
-                  <q-btn
-                    @click="documentGet(user)"
-                    class="glossy"
-                    rounded
-                    color="green"
-                    style="margin: 1em 0.5em"
-                    :label="$q.screen.lt.md ? '' : 'Constancia'"
-                    icon="picture_as_pdf"
-                  />
                   <q-btn
                     @click="editUser(user)"
                     class="glossy"
@@ -109,7 +84,7 @@
       style="margin-right: 2em; margin-bottom: 2em"
     >
       <q-fab icon="list" direction="up" color="accent">
-        <q-fab-action color="green" icon="add" to="register_user" />
+        <q-fab-action color="green" icon="add" to="register_consultorio" />
         <q-fab-action color="primary" icon="search" @click="search()" />
         <q-fab-action color="red" icon="restart_alt" @click="refresh()" />
         <q-fab-action
@@ -145,9 +120,9 @@ watch(paginate.value, async (val) => {
   await getData();
 });
 onMounted(async () => {
-  //counter usuarios
+  //counter consultorios
   const { data: count_user, error } = await supabase
-    .from("Usuarios")
+    .from("consultorios")
     .select("count", { count: "exact" });
   if (error) {
     Notify.create({
@@ -164,16 +139,16 @@ const search_item = ref(null);
 const getData = async () => {
   if (search_item.value != null) {
     var { data, error } = await supabase
-      .from("Usuarios")
+      .from("consultorios")
       .select("*")
-      .like("cedula", "%" + search_item.value + "%")
+      .like("nombre", "%" + search_item.value + "%")
       .range(
         paginate.value.perPage * (paginate.value.currentPage - 1),
         paginate.value.perPage * paginate.value.currentPage
       );
   } else {
     var { data, error } = await supabase
-      .from("Usuarios")
+      .from("consultorios")
       .select("*")
       .range(
         paginate.value.perPage * (paginate.value.currentPage - 1),
@@ -201,8 +176,8 @@ const refresh = async () => {
 };
 const search = () => {
   $q.dialog({
-    title: "Buscar",
-    message: "Coloque la cedula del usuario",
+    title: "Buscar consultorio",
+    message: "Coloque el nombre",
     prompt: {
       model: "",
       type: "text", // optional
@@ -224,12 +199,15 @@ const search = () => {
 const deleteUser = (id) => {
   $q.dialog({
     title: "Confirmación",
-    message: "Desea borrar el usuario seleccionado",
+    message: "Desea borrar el elemento seleccionado",
     cancel: true,
     persistent: true,
   })
     .onOk(async () => {
-      const { error } = await supabase.from("Usuarios").delete().eq("id", id);
+      const { error } = await supabase
+        .from("consultorios")
+        .delete()
+        .eq("id", id);
       if (error) {
         Notify.create({
           message: "Compruebe su conexión a internet",
@@ -238,7 +216,7 @@ const deleteUser = (id) => {
         });
       } else {
         Notify.create({
-          message: "Usuario borrado correctamente",
+          message: "Datos borrado correctamente",
           color: "green",
           icon: "check",
         });
@@ -256,11 +234,11 @@ const deleteUser = (id) => {
     });
 };
 const editUser = (user) => {
-  localStorage.setItem("user_id_edit", user.id);
-  router.push("/editar_user");
+  localStorage.setItem("consultorio_id_edit", user.id);
+  router.push("/register_consultorio");
 };
 const exportData = async () => {
-  const { data, error } = await supabase.from("Usuarios").select("*").csv();
+  const { data, error } = await supabase.from("consultorios").select("*").csv();
 
   if (error) {
     Notify.create({
@@ -275,10 +253,10 @@ const exportData = async () => {
       icon: "check",
     });
     const blob = new Blob([data], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "data.csv");
+    saveAs(blob, "data_consultorios.csv");
   }
 };
-const documentGet = async (user) => {
+/* const documentGet = async (user) => {
   window.open(baseURL + "asic_constancia/" + user.id, "_blank");
-};
+}; */
 </script>

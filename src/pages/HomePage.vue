@@ -3,7 +3,7 @@
     class="flex flex-center"
     style="
       width: 100vw;
-      height: 100vh;
+      height: 100%;
       background: radial-gradient(
         circle,
         rgba(212, 211, 230, 1) 0%,
@@ -14,8 +14,8 @@
   >
     <section>
       <div class="row">
-        <div class="col-12">
-          <q-card class="my-card" style="background: white; margin: 1em">
+        <div class="col" style="padding: 1em">
+          <q-card class="my-card" style="background: white">
             <h5 align="center" style="padding: 1em">
               Usuarios del sistema: {{ usuarios_count }}
             </h5>
@@ -28,20 +28,31 @@
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-12 col-md-6" style="display: none">
-          <q-card class="my-card" style="background: white; margin: 1em">
+        <div class="col" style="padding: 1em">
+          <q-card class="my-card" style="background: white">
+            <h5 align="center" style="padding: 1em">
+              Usuarios por consultorio
+            </h5>
             <q-card-section>
               <img
-                :src="chartUrl"
+                :src="chartUrlConsultorios"
                 style="width: 100%; height: auto; margin: auto"
-                alt="My Awesome Chart"
+                alt="Usuarios por consultorio"
               />
             </q-card-section>
           </q-card>
         </div>
       </div>
       <q-page-sticky position="bottom-right" :offset="[18, 18]">
-        <q-btn fab icon="autorenew" color="green" @click="recargar()" />
+        <q-btn
+          fab
+          icon="autorenew"
+          color="green"
+          @click="
+            recargar();
+            segundo_chat_recarga();
+          "
+        />
       </q-page-sticky>
     </section>
   </q-page>
@@ -59,11 +70,15 @@ const usuarios_count = ref(0);
 const admin_count = ref(0);
 const obreros_count = ref(0);
 const salud_count = ref(0);
+const chartUrlConsultorios = ref("");
 //inir default chart
 const chartUrl = ref("");
-
+const randomColor = () => {
+  return "#" + Math.floor(Math.random() * 16777215).toString(16);
+};
 onMounted(async () => {
   recargar();
+  segundo_chat_recarga();
 });
 
 const recargar = async () => {
@@ -138,4 +153,52 @@ const recargar = async () => {
   });
   chartUrl.value = chart.getUrl();
 }; //end
+
+const segundo_chat_recarga = async () => {
+  const { data: count_consultorios, error } = await supabase
+    .from("consultorios")
+    .select("*");
+  if (error) {
+    Notify.create({
+      message: "Compruebe su conexión a internet",
+      color: "red",
+      icon: "report_problem",
+    });
+  } else {
+    const usuarios_consultorio = [];
+    for (let i = 0; i < count_consultorios.length; i++) {
+      const { data: count_user, error } = await supabase
+        .from("Usuarios")
+        .select("count", { count: "exact" })
+        .eq("consultorio_id", count_consultorios[i].id);
+      if (error) {
+        Notify.create({
+          message: "Compruebe su conexión a internet",
+          color: "red",
+          icon: "report_problem",
+        });
+      } else {
+        usuarios_consultorio.push(count_user[0].count);
+      }
+    }
+    console.log(count_consultorios);
+    console.log(usuarios_consultorio);
+    console.log(randomColor());
+    const chart = new QuickChart();
+    chart.setConfig({
+      type: "bar",
+      data: {
+        labels: count_consultorios.map((item) => item.nombre),
+        datasets: [
+          {
+            label: "Usuarios por consultorio",
+            data: usuarios_consultorio,
+            backgroundColor: usuarios_consultorio.map((item) => randomColor()),
+          },
+        ],
+      },
+    });
+    chartUrlConsultorios.value = chart.getUrl();
+  }
+};
 </script>

@@ -3,7 +3,7 @@
     class="flex flex-center"
     style="
       width: 100vw;
-      height: 100vh;
+      height: 100%;
       background: url(f35d45c703b29e670b970eb48bc24c8b.jpg) no-repeat center
         center;
       background-size: cover;

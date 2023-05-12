@@ -39,7 +39,9 @@ const routes = [
     path: "/horarios",
     name: "horarios",
     component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/HorariosPage.vue") }],
+    children: [
+      { path: "", component: () => import("pages/PlanificacionPage.vue") },
+    ],
   },
   {
     path: "/register_user",
@@ -58,6 +60,66 @@ const routes = [
         path: "",
         props: true,
         component: () => import("pages/RegisterUserPage.vue"),
+      },
+    ],
+  },
+  {
+    path: "/consultorios",
+    name: "consultorios",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        props: true,
+        component: () => import("pages/ConsultoriosPage.vue"),
+      },
+    ],
+  },
+  {
+    path: "/pacientes",
+    name: "pacientes",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        props: true,
+        component: () => import("pages/PacientesPage.vue"),
+      },
+    ],
+  },
+  {
+    path: "/register_paciente",
+    name: "register_paciente",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        props: true,
+        component: () => import("pages/RegisterPacientePage.vue"),
+      },
+    ],
+  },
+  {
+    path: "/inventario",
+    name: "inventario",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        props: true,
+        component: () => import("pages/InventarioPage.vue"),
+      },
+    ],
+  },
+  {
+    path: "/register_consultorio",
+    name: "register_consultorio",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        props: true,
+        component: () => import("pages/RegisterConsultorioPage.vue"),
       },
     ],
   },
