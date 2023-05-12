@@ -138,7 +138,6 @@ const paginate = ref({
   perPage: 10,
   totalPages: 10,
 });
-
 const users = ref([]);
 watch(paginate.value, async (val) => {
   console.log(val.currentPage);
@@ -156,7 +155,9 @@ onMounted(async () => {
       icon: "report_problem",
     });
   } else {
-    paginate.value.totalPages = count_user[0].count / paginate.value.perPage;
+    paginate.value.totalPages = Math.ceil(
+      count_user[0].count / paginate.value.perPage
+    );
   }
   await getData();
 });

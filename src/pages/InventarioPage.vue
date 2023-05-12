@@ -144,7 +144,9 @@ onMounted(async () => {
       icon: "report_problem",
     });
   } else {
-    paginate.value.totalPages = count_user[0].count / paginate.value.perPage;
+    paginate.value.totalPages = Math.ceil(
+      count_user[0].count / paginate.value.perPage
+    );
   }
   await getData();
 });

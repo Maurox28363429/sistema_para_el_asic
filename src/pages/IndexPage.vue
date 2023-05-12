@@ -38,6 +38,7 @@
               v-model="password"
               label="Password"
               type="password"
+              @keyup.enter="login"
               lazy-rules
               :rules="[(val) => !!val || 'Please enter your password']"
             />
