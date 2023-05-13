@@ -63,18 +63,31 @@
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label header> Acciones </q-item-label>
+        <q-item>
+          <img src="logo.png" style="width: 80%; margin: auto" />
+        </q-item>
+        <q-item-label header>
+          <q-input
+            v-model="search_menu"
+            dense
+            placeholder="Buscar Acción"
+            style="width: 100%"
+          />
+        </q-item-label>
         <ul class="lista_menu">
-          <router-link
+          <li
             v-for="(link, index) of essentialLinks"
             :key="index"
-            :to="link.link"
+            v-show="determine(link.title, search_menu)"
           >
-            <li>
+            <router-link
+              style="width: 100%; display: flex; align-items: center"
+              :to="link.link"
+            >
               <q-icon size="md" :name="link.icon" />
               {{ link.title }}
-            </li>
-          </router-link>
+            </router-link>
+          </li>
 
           <li @click="logout()">
             <q-icon size="md" name="logout" />
@@ -117,14 +130,37 @@ import supabase from "src/supabase";
 import { Notify } from "quasar";
 import { useQuasar } from "quasar";
 const $q = useQuasar();
-
+const search_menu = ref("");
 const router = useRouter();
+const determine = (title, search) => {
+  if (search == "") {
+    return true;
+  } else {
+    if (title.toLowerCase().includes(search.toLowerCase())) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
 var essentialLinks = [
   {
     title: "Inicio",
     caption: "Volver a la página de inicio",
     icon: "home",
     link: "home",
+  },
+  {
+    title: "Consultas",
+    caption: "Administrar consultas",
+    icon: "event",
+    link: "consultas",
+  },
+  {
+    title: "Historias",
+    caption: "Administrar historias clínicas",
+    icon: "description",
+    link: "historias",
   },
   {
     title: "Personal",
@@ -184,25 +220,11 @@ const notifiy = supabase
       console.log("Change received!", payload);
       if (payload.new.user_id == user.value.id) {
         get_notify();
-        $q.dialog({
-          timeout: 5000,
-          dark: true,
-          message: payload.new.descripcion,
-          title: payload.new.title,
-          icon: "notifications",
-        })
-          .onOk(async () => {
-            await supabase
-              .from("notifiy")
-              .delete()
-              .match({ id: payload.new.id });
-          })
-          .onCancel(() => {
-            // console.log('Cancel')
-          })
-          .onDismiss(() => {
-            // console.log('I am triggered on both OK and Cancel')
-          });
+        Notify.create({
+          message: payload.new.title,
+          color: "green",
+          icon: "check",
+        });
       }
     }
   )

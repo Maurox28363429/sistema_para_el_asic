@@ -26,7 +26,7 @@
         <q-card-section>
           <div align="center">
             <q-icon name="user"></q-icon>
-            <h4>Consultorios</h4>
+            <h4>Consultas</h4>
           </div>
         </q-card-section>
 

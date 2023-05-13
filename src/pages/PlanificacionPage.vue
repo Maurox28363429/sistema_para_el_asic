@@ -23,20 +23,21 @@
       </div>
       <q-card style="background: white">
         <q-card-section>
-          <h5>{{ selectEvent.fecha }}</h5>
-          <q-input
-            label="Recordatorio"
+          Fecha seleccionada: {{ selectEvent.fecha }}
+          <q-editor
             v-model="selectEvent.text"
-            filled
-            type="textarea"
-          />
-          <q-btn
-            square
-            color="primary"
-            icon="save"
-            label="guardar"
-            @click="guardar()"
-          />
+            :definitions="{
+              save: {
+                tip: 'Guardar contenido',
+                icon: 'save',
+                label: 'Save',
+                handler: guardar(),
+              },
+              bold: { label: 'Bold', icon: null, tip: 'My bold tooltip' },
+            }"
+            :toolbar="[['bold', 'italic', 'strike', 'underline'], ['save']]"
+          >
+          </q-editor>
         </q-card-section>
       </q-card>
     </section>

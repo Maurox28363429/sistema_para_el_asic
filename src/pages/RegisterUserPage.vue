@@ -97,6 +97,35 @@
               <div style="text-align: left; font-size: 1.5em">
                 Archivos subidos: {{ files.length }}
               </div> -->
+              <div class="col-12">
+                <h4>Datos Todo List</h4>
+                <div v-for="(data, index) in todoList" :key="index" class="row">
+                  <div class="col-6">
+                    <q-input
+                      v-model="data.campo"
+                      label="Campo"
+                      outlined
+                      style="margin: 1em"
+                    />
+                  </div>
+                  <div class="col-6">
+                    <q-input
+                      v-model="data.valor"
+                      label="Valor"
+                      outlined
+                      style="margin: 1em"
+                    />
+                  </div>
+                </div>
+                <q-btn
+                  @click="addTodoList()"
+                  label="Agregar datos"
+                  color="blue"
+                  icon="add"
+                  class="col-12"
+                  style="margin: 1em"
+                />
+              </div>
               <q-btn
                 @click="registerUser"
                 :label="edit ? 'Editar' : 'Registrar'"
@@ -130,6 +159,18 @@ import { Notify } from "quasar";
 import { useRouter } from "vue-router";
 const router = useRouter();
 
+const todoList = ref([
+  {
+    campo: "",
+    valor: "",
+  },
+]);
+const addTodoList = () => {
+  todoList.value.push({
+    campo: "",
+    valor: "",
+  });
+};
 const nombre = ref("");
 const apellido = ref("");
 const email = ref("");
@@ -191,6 +232,7 @@ const registerUser = async () => {
           role_id: role_id.value.value,
           password: password.value,
           consultorio_id: consultorio_id.value.value,
+          json_data: todoList.value,
         },
       ])
       .single();
@@ -221,6 +263,7 @@ const registerUser = async () => {
         role_id: role_id.value.value,
         password: password.value,
         consultorio_id: consultorio_id.value.value,
+        json_data: todoList.value,
       })
       .eq("id", user_id.value);
     if (error) {
@@ -273,7 +316,9 @@ const init_part1 = async () => {
     localStorage.removeItem("user_id_edit");
     const { data, error } = await supabase
       .from("Usuarios")
-      .select("*")
+      .select(
+        "nombre,apellido,email,cedula,rif,password,json_data,consultorios(nombre),roles(name)"
+      )
       .eq("id", user_id.value)
       .single();
     if (error) {
@@ -289,9 +334,10 @@ const init_part1 = async () => {
       email.value = data.email;
       cedula.value = data.cedula;
       rif.value = data.rif;
-      role_id.value = data.role_id;
+      role_id.value = data.roles.name;
       password.value = data.password;
-      consultorio_id.value = data.consultorio_id;
+      consultorio_id.value = data.consultorios.nombre;
+      todoList.value = data.json_data;
     }
   }
 };

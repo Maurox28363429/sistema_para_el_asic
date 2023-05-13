@@ -176,11 +176,6 @@ const getData = async () => {
     });
   } else {
     users.value = data;
-    Notify.create({
-      message: "Datos cargados correctamente",
-      color: "green",
-      icon: "check",
-    });
   }
 };
 const refresh = async () => {

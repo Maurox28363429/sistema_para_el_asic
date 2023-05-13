@@ -36,15 +36,17 @@
           <table style="width: 100%; margin: auto; text-align: center">
             <thead>
               <tr>
-                <th>Nombre</th>
-                <th>Dirección</th>
+                <th>Paciente</th>
+                <th>Consultorio</th>
+                <th>Emisión</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(user, index) of users" :key="index">
-                <td>{{ user.nombre }}</td>
-                <td>{{ user.direccion }}</td>
+                <td>{{ user.pacientes.nombre }}</td>
+                <td>{{ user.consultorios.nombre }}</td>
+                <td>{{ getDate(user.created_at) }}</td>
                 <td>
                   <q-btn
                     @click="editUser(user)"
@@ -84,7 +86,7 @@
       style="margin-right: 2em; margin-bottom: 2em"
     >
       <q-fab icon="list" direction="up" color="accent">
-        <q-fab-action color="green" icon="add" to="register_consultorio" />
+        <q-fab-action color="green" icon="add" to="register_consulta" />
         <q-fab-action color="primary" icon="search" @click="search()" />
         <q-fab-action color="red" icon="restart_alt" @click="refresh()" />
         <q-fab-action
@@ -113,7 +115,13 @@ const paginate = ref({
   perPage: 10,
   totalPages: 10,
 });
-
+const getDate = (fecha) => {
+  var date = new Date(fecha);
+  var day = date.getDate();
+  var month = date.getMonth() + 1;
+  var year = date.getFullYear();
+  return day + "/" + month + "/" + year;
+};
 const users = ref([]);
 watch(paginate.value, async (val) => {
   console.log(val.currentPage);
@@ -122,7 +130,7 @@ watch(paginate.value, async (val) => {
 onMounted(async () => {
   //counter consultorios
   const { data: count_user, error } = await supabase
-    .from("consultorios")
+    .from("consultas_medicas")
     .select("count", { count: "exact" });
   if (error) {
     Notify.create({
@@ -141,17 +149,17 @@ const search_item = ref(null);
 const getData = async () => {
   if (search_item.value != null) {
     var { data, error } = await supabase
-      .from("consultorios")
-      .select("*")
-      .like("nombre", "%" + search_item.value + "%")
+      .from("consultas_medicas")
+      .select(`id,consultorios(nombre),pacientes(nombre),created_at`)
+      .like("pacientes.nombre", "%" + search_item.value + "%")
       .range(
         paginate.value.perPage * (paginate.value.currentPage - 1),
         paginate.value.perPage * paginate.value.currentPage
       );
   } else {
     var { data, error } = await supabase
-      .from("consultorios")
-      .select("*")
+      .from("consultas_medicas")
+      .select(`id,consultorios(nombre),pacientes(nombre),created_at`)
       .range(
         paginate.value.perPage * (paginate.value.currentPage - 1),
         paginate.value.perPage * paginate.value.currentPage
@@ -165,11 +173,6 @@ const getData = async () => {
     });
   } else {
     users.value = data;
-    Notify.create({
-      message: "Datos cargados correctamente",
-      color: "green",
-      icon: "check",
-    });
   }
 };
 const refresh = async () => {
@@ -207,7 +210,7 @@ const deleteUser = (id) => {
   })
     .onOk(async () => {
       const { error } = await supabase
-        .from("consultorios")
+        .from("consultas_medicas")
         .delete()
         .eq("id", id);
       if (error) {
@@ -236,11 +239,27 @@ const deleteUser = (id) => {
     });
 };
 const editUser = (user) => {
-  localStorage.setItem("consultorio_id_edit", user.id);
-  router.push("/register_consultorio");
+  localStorage.setItem("consulta_id_edit", user.id);
+  router.push("/register_consulta");
 };
 const exportData = async () => {
-  const { data, error } = await supabase.from("consultorios").select("*").csv();
+  const { data, error } = await supabase
+    .from("consultas_medicas")
+    .select("id,consultorios(nombre),pacientes(nombre),created_at");
+  //json_to_csv
+  let data_csv = "";
+  data_csv += "id,consultorio,paciente,fecha\n";
+  data.forEach((element) => {
+    data_csv +=
+      element.id +
+      "," +
+      element.consultorios.nombre +
+      "," +
+      element.pacientes.nombre +
+      "," +
+      getDate(element.created_at) +
+      "\n";
+  });
 
   if (error) {
     Notify.create({
@@ -254,8 +273,8 @@ const exportData = async () => {
       color: "green",
       icon: "check",
     });
-    const blob = new Blob([data], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "data_consultorios.csv");
+    const blob = new Blob([data_csv], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "data_consultas_medicas.csv");
   }
 };
 /* const documentGet = async (user) => {

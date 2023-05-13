@@ -139,11 +139,16 @@ const paginate = ref({
   totalPages: 10,
 });
 const users = ref([]);
+const consultorios = ref([]);
 watch(paginate.value, async (val) => {
   console.log(val.currentPage);
   await getData();
 });
 onMounted(async () => {
+  await counter_paginate();
+  await getData();
+});
+const counter_paginate = async () => {
   //counter usuarios
   const { data: count_user, error } = await supabase
     .from("Usuarios")
@@ -159,8 +164,7 @@ onMounted(async () => {
       count_user[0].count / paginate.value.perPage
     );
   }
-  await getData();
-});
+};
 const search_item = ref(null);
 const getData = async () => {
   if (search_item.value != null) {
@@ -189,11 +193,6 @@ const getData = async () => {
     });
   } else {
     users.value = data;
-    Notify.create({
-      message: "Datos cargados correctamente",
-      color: "green",
-      icon: "check",
-    });
   }
 };
 const refresh = async () => {

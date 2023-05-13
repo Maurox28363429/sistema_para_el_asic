@@ -76,6 +76,42 @@ const routes = [
     ],
   },
   {
+    path: "/consultas",
+    name: "consultas",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        props: true,
+        component: () => import("pages/ConsultasMedicasPage.vue"),
+      },
+    ],
+  },
+  {
+    path: "/historias",
+    name: "historias",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        props: true,
+        component: () => import("pages/historiasPage.vue"),
+      },
+    ],
+  },
+  {
+    path: "/register_consulta",
+    name: "register_consulta",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        props: true,
+        component: () => import("pages/RegisterConsultaPage.vue"),
+      },
+    ],
+  },
+  {
     path: "/pacientes",
     name: "pacientes",
     component: () => import("layouts/MainLayout.vue"),
@@ -96,6 +132,18 @@ const routes = [
         path: "",
         props: true,
         component: () => import("pages/RegisterPacientePage.vue"),
+      },
+    ],
+  },
+  {
+    path: "/register_producto",
+    name: "register_producto",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        props: true,
+        component: () => import("pages/RegisterInventarioPage.vue"),
       },
     ],
   },

@@ -26,7 +26,7 @@
         <q-card-section>
           <div align="center">
             <q-icon name="user"></q-icon>
-            <h4>Pacientes</h4>
+            <h4>Inventario</h4>
           </div>
         </q-card-section>
 
@@ -37,18 +37,18 @@
             <thead>
               <tr>
                 <th>Nombre</th>
-                <th>Sexo</th>
-                <th>Edad</th>
-                <th>Cedula</th>
+                <th>Lote</th>
+                <th>Cantidad</th>
+                <th>consultorio</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(user, index) of users" :key="index">
-                <td>{{ user.nombre }}</td>
-                <td>{{ user.sexo }}</td>
-                <td>{{ getEdad(user.fecha_nacimiento) }}</td>
-                <td>{{ user.cedula }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.lote }}</td>
+                <td>{{ user.stock }}</td>
+                <td>{{ consultorioFind(user.consultorio_id) }}</td>
                 <td>
                   <q-btn
                     @click="editUser(user)"
@@ -88,8 +88,8 @@
       style="margin-right: 2em; margin-bottom: 2em"
     >
       <q-fab icon="list" direction="up" color="accent">
-        <q-fab-action color="green" icon="add" to="register_consultorio" />
-        <q-fab-action color="primary" icon="search" @click="search()" />
+        <q-fab-action color="green" icon="add" to="register_producto" />
+        <!-- <q-fab-action color="primary" icon="search" @click="search()" /> -->
         <q-fab-action color="red" icon="restart_alt" @click="refresh()" />
         <q-fab-action
           color="green"
@@ -112,30 +112,36 @@ import { baseURL } from "src/boot/axios.js";
 
 const router = useRouter();
 const $q = useQuasar();
+const consultorios = ref([]);
+const consultorioFind = (id) => {
+  console.log(consultorios.value);
+  return consultorios.value.find((consult) => consult.id === id).nombre;
+};
 const paginate = ref({
   currentPage: 1,
   perPage: 10,
   totalPages: 10,
 });
-const getEdad = (fecha) => {
-  var hoy = new Date();
-  var cumpleanos = new Date(fecha);
-  var edad = hoy.getFullYear() - cumpleanos.getFullYear();
-  var m = hoy.getMonth() - cumpleanos.getMonth();
-  if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
-    edad--;
-  }
-  return edad;
-};
 const users = ref([]);
 watch(paginate.value, async (val) => {
   console.log(val.currentPage);
   await getData();
 });
 onMounted(async () => {
+  await part1();
+  await part2();
+  await getData();
+});
+const part1 = async () => {
+  const { data: consult, erro1 } = await supabase
+    .from("consultorios")
+    .select("*");
+  consultorios.value = consult;
+};
+const part2 = async () => {
   //counter consultorios
   const { data: count_user, error } = await supabase
-    .from("pacientes")
+    .from("productos")
     .select("count", { count: "exact" });
   if (error) {
     Notify.create({
@@ -148,13 +154,12 @@ onMounted(async () => {
       count_user[0].count / paginate.value.perPage
     );
   }
-  await getData();
-});
+};
 const search_item = ref(null);
 const getData = async () => {
   if (search_item.value != null) {
     var { data, error } = await supabase
-      .from("pacientes")
+      .from("productos")
       .select("*")
       .like("cedula", "%" + search_item.value + "%")
       .range(
@@ -163,7 +168,7 @@ const getData = async () => {
       );
   } else {
     var { data, error } = await supabase
-      .from("pacientes")
+      .from("productos")
       .select("*")
       .range(
         paginate.value.perPage * (paginate.value.currentPage - 1),
@@ -178,11 +183,6 @@ const getData = async () => {
     });
   } else {
     users.value = data;
-    Notify.create({
-      message: "Datos cargados correctamente",
-      color: "green",
-      icon: "check",
-    });
   }
 };
 const refresh = async () => {
@@ -219,7 +219,7 @@ const deleteUser = (id) => {
     persistent: true,
   })
     .onOk(async () => {
-      const { error } = await supabase.from("pacientes").delete().eq("id", id);
+      const { error } = await supabase.from("productos").delete().eq("id", id);
       if (error) {
         Notify.create({
           message: "Compruebe su conexión a internet",
@@ -246,11 +246,11 @@ const deleteUser = (id) => {
     });
 };
 const editUser = (user) => {
-  localStorage.setItem("paciente_id_edit", user.id);
-  router.push("/register_consultorio");
+  localStorage.setItem("producto_id_edit", user.id);
+  router.push("/register_producto");
 };
 const exportData = async () => {
-  const { data, error } = await supabase.from("pacientes").select("*").csv();
+  const { data, error } = await supabase.from("productos").select("*").csv();
 
   if (error) {
     Notify.create({
@@ -265,7 +265,7 @@ const exportData = async () => {
       icon: "check",
     });
     const blob = new Blob([data], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "data_consultorios.csv");
+    saveAs(blob, "data_productos.csv");
   }
 };
 /* const documentGet = async (user) => {
