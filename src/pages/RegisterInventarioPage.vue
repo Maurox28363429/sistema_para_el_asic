@@ -26,7 +26,7 @@
             </h4>
             <form id="formdata">
               <q-input
-                v-model="name"
+                v-model="nombre"
                 label="Nombre"
                 outlined
                 class="col-12"
@@ -53,7 +53,14 @@
                 class="col-12"
                 style="margin-bottom: 1em"
               />
-
+              <q-input
+                v-model="fecha_vencimiento"
+                label="Fecha de Vencimiento"
+                outlined
+                class="col-12"
+                style="margin-bottom: 1em"
+                type="date"
+              />
               <q-btn
                 @click="registerUser"
                 :label="edit ? 'Editar' : 'Registrar'"
@@ -62,7 +69,7 @@
                 style="margin: 1em"
               />
               <q-btn
-                @click="cancel"
+                to="inventario"
                 label="Cancelar"
                 color="red"
                 class="col-12"
@@ -88,44 +95,24 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 
 const nombre = ref("");
-const direccion = ref("");
-
+const lote = ref("");
+const stock = ref("");
+const codigo = ref("");
+const fecha_vencimiento = ref("");
 const edit = ref(false);
 const user_id = ref("");
 //const files = ref([]);
 const registerUser = async () => {
-  /*   if (files.value.length > 0) {
-    for (let i = 0; i < files.value.length; i++) {
-      const { data, error2 } = await supabase.storage.createBucket(
-        cedula.value
-      );
-      const { error } = await supabase.storage
-        .from(cedula.value)
-        .upload(files.value[i].name, files.value[i]);
-      if (error) {
-        Notify.create({
-          message: error.message,
-          color: "red",
-          position: "top",
-          icon: "report_problem",
-        });
-      } else {
-        json.value.array_files.push(
-          "https://lyikdkydcxiukrhkrqwz.supabase.co/storage/v1/object/public/" +
-            cedula.value +
-            "/" +
-            files.value[i].name
-        );
-      }
-    }
-  } */
   if (edit.value == false) {
     const { error } = await supabase
-      .from("consultorios")
+      .from("productos")
       .insert([
         {
-          nombre: nombre.value,
-          direccion: direccion.value,
+          name: nombre.value,
+          lote: lote.value,
+          stock: stock.value,
+          codigo: codigo.value,
+          fecha_vencimiento: fecha_vencimiento.value,
         },
       ])
       .single();
@@ -138,7 +125,7 @@ const registerUser = async () => {
       });
     } else {
       Notify.create({
-        message: "Consultorio registrado con exito",
+        message: "Producto registrado con exito",
         color: "green",
         position: "top",
         icon: "check",
@@ -146,10 +133,13 @@ const registerUser = async () => {
     }
   } else {
     const { error } = await supabase
-      .from("consultorios")
+      .from("productos")
       .update({
-        nombre: nombre.value,
-        direccion: direccion.value,
+        name: nombre.value,
+        lote: lote.value,
+        stock: stock.value,
+        codigo: codigo.value,
+        fecha_vencimiento: fecha_vencimiento.value,
       })
       .eq("id", user_id.value);
     if (error) {
@@ -161,7 +151,7 @@ const registerUser = async () => {
       });
     } else {
       Notify.create({
-        message: "Consultorio actualizado con exito",
+        message: "Producto actualizado con exito",
         color: "green",
         position: "top",
         icon: "check",
@@ -176,7 +166,7 @@ onMounted(async () => {
     user_id.value = localStorage.getItem("producto_id_edit");
     localStorage.removeItem("producto_id_edit");
     const { data, error } = await supabase
-      .from("consultorios")
+      .from("productos")
       .select("*")
       .eq("id", user_id.value)
       .single();
@@ -188,12 +178,12 @@ onMounted(async () => {
         icon: "report_problem",
       });
     } else {
-      nombre.value = data.nombre;
-      direccion.value = data.direccion;
+      nombre.value = data.name;
+      lote.value = data.lote;
+      stock.value = data.stock;
+      codigo.value = data.codigo;
+      fecha_vencimiento.value = data.fecha_vencimiento;
     }
   }
 });
-const cancel = () => {
-  document.getElementById("formdata").reset();
-};
 </script>

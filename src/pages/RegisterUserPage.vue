@@ -24,7 +24,7 @@
               {{ edit ? "Editar" : "Registrar" }}
               Usuario
             </h4>
-            <form id="formdata">
+            <form id="formdata" class="row">
               <q-input
                 v-model="nombre"
                 label="Nombre"
@@ -56,6 +56,43 @@
               <q-input
                 v-model="rif"
                 label="RIF"
+                outlined
+                class="col-12"
+                style="margin-bottom: 1em"
+              />
+              <q-input
+                v-model="telefono"
+                label="Telefono"
+                outlined
+                class="col-12"
+                style="margin-bottom: 1em"
+              />
+              <q-input
+                v-model="fecha_entrada"
+                label="Fecha de ingreso"
+                outlined
+                class="col-12"
+                style="margin-bottom: 1em"
+                type="date"
+                mask="DD/MM/YYYY"
+              />
+              <q-input
+                v-model="talla_pantalon"
+                label="Talla de pantalon"
+                outlined
+                class="col-12"
+                style="margin-bottom: 1em"
+              />
+              <q-input
+                v-model="talla_camisa"
+                label="Talla de camisa"
+                outlined
+                class="col-12"
+                style="margin-bottom: 1em"
+              />
+              <q-input
+                v-model="talla_zapatos"
+                label="Talla de zapatos"
                 outlined
                 class="col-12"
                 style="margin-bottom: 1em"
@@ -100,7 +137,7 @@
               <div class="col-12">
                 <h4>Datos Todo List</h4>
                 <div v-for="(data, index) in todoList" :key="index" class="row">
-                  <div class="col-6">
+                  <div class="col-5">
                     <q-input
                       v-model="data.campo"
                       label="Campo"
@@ -108,12 +145,21 @@
                       style="margin: 1em"
                     />
                   </div>
-                  <div class="col-6">
+                  <div class="col-5">
                     <q-input
                       v-model="data.valor"
                       label="Valor"
                       outlined
                       style="margin: 1em"
+                    />
+                  </div>
+                  <div class="col-2" style="padding-top: 1.3em">
+                    <q-btn
+                      class="glossy"
+                      @click="removeTodoList(index)"
+                      round
+                      color="red"
+                      icon="delete"
                     />
                   </div>
                 </div>
@@ -126,20 +172,20 @@
                   style="margin: 1em"
                 />
               </div>
-              <q-btn
-                @click="registerUser"
-                :label="edit ? 'Editar' : 'Registrar'"
-                color="green"
-                class="col-12"
-                style="margin: 1em"
-              />
-              <q-btn
-                @click="cancel"
-                label="Cancelar"
-                color="red"
-                class="col-12"
-                style="margin: 1em"
-              />
+              <div class="col-12" style="margin: 1em">
+                <q-btn
+                  @click="registerUser"
+                  :label="edit ? 'Editar' : 'Registrar'"
+                  color="green"
+                  style="margin: 1em; min-width: 200px"
+                />
+                <q-btn
+                  to="usuarios"
+                  label="Cancelar"
+                  color="red"
+                  style="margin: 1em; min-width: 200px"
+                />
+              </div>
             </form>
           </div>
         </q-card-section>
@@ -180,6 +226,12 @@ const role_id = ref("");
 const password = ref("");
 const edit = ref(false);
 const user_id = ref("");
+const telefono = ref("");
+const fecha_entrada = ref("");
+const talla_pantalon = ref("");
+const talla_camisa = ref("");
+const talla_zapatos = ref("");
+
 //const files = ref([]);
 const roles = [
   { label: "Administrador", value: 1 },
@@ -233,6 +285,11 @@ const registerUser = async () => {
           password: password.value,
           consultorio_id: consultorio_id.value.value,
           json_data: todoList.value,
+          telefono: telefono.value,
+          fecha_entrada: fecha_entrada.value,
+          talla_pantalon: talla_pantalon.value,
+          talla_camisa: talla_camisa.value,
+          talla_zapatos: talla_zapatos.value,
         },
       ])
       .single();
@@ -264,6 +321,11 @@ const registerUser = async () => {
         password: password.value,
         consultorio_id: consultorio_id.value.value,
         json_data: todoList.value,
+        telefono: telefono.value,
+        fecha_entrada: fecha_entrada.value,
+        talla_pantalon: talla_pantalon.value,
+        talla_camisa: talla_camisa.value,
+        talla_zapatos: talla_zapatos.value,
       })
       .eq("id", user_id.value);
     if (error) {
@@ -288,9 +350,6 @@ onMounted(() => {
   init_part1();
   init_part2();
 });
-const cancel = () => {
-  document.getElementById("formdata").reset();
-};
 const init_part2 = async () => {
   const { data, error } = await supabase
     .from("consultorios")
@@ -317,7 +376,7 @@ const init_part1 = async () => {
     const { data, error } = await supabase
       .from("Usuarios")
       .select(
-        "nombre,apellido,email,cedula,rif,password,json_data,consultorios(nombre),roles(name)"
+        "nombre,apellido,email,cedula,rif,password,json_data,consultorios(nombre),roles(name),telefono,fecha_entrada,talla_pantalon,talla_camisa,talla_zapatos"
       )
       .eq("id", user_id.value)
       .single();
@@ -338,7 +397,15 @@ const init_part1 = async () => {
       password.value = data.password;
       consultorio_id.value = data.consultorios.nombre;
       todoList.value = data.json_data;
+      telefono.value = data.telefono;
+      fecha_entrada.value = data.fecha_entrada;
+      talla_pantalon.value = data.talla_pantalon;
+      talla_camisa.value = data.talla_camisa;
+      talla_zapatos.value = data.talla_zapatos;
     }
   }
+};
+const removeTodoList = (index) => {
+  todoList.value.splice(index, 1);
 };
 </script>

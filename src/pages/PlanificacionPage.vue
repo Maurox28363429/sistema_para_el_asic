@@ -24,20 +24,27 @@
       <q-card style="background: white">
         <q-card-section>
           Fecha seleccionada: {{ selectEvent.fecha }}
-          <q-editor
-            v-model="selectEvent.text"
-            :definitions="{
-              save: {
-                tip: 'Guardar contenido',
-                icon: 'save',
-                label: 'Save',
-                handler: guardar(),
-              },
-              bold: { label: 'Bold', icon: null, tip: 'My bold tooltip' },
-            }"
-            :toolbar="[['bold', 'italic', 'strike', 'underline'], ['save']]"
-          >
-          </q-editor>
+          <div v-show="user.role_id == 1">
+            <q-editor
+              v-model="selectEvent.text"
+              :definitions="{
+                bold: { label: 'Bold', icon: null, tip: 'My bold tooltip' },
+              }"
+              :toolbar="[['bold', 'italic', 'strike', 'underline'], ['save']]"
+            >
+            </q-editor>
+            <div style="margin-top: 2em">
+              <q-btn
+                label="Guardar"
+                @click="guardar()"
+                style="width: 100%"
+                color="primary"
+              />
+            </div>
+          </div>
+          <div v-show="user.role_id != 1">
+            <span v-html="selectEvent.text"></span>
+          </div>
         </q-card-section>
       </q-card>
     </section>
@@ -47,6 +54,9 @@
 <script setup>
 import supabase from "src/supabase";
 import { ref, watch, onMounted } from "vue";
+import { logoutLocal, userLocal } from "../composables/localStorage";
+import { Notify } from "quasar";
+const user = ref(userLocal());
 const splitterModel = ref(50);
 const getDate = (date) => {
   const d = new Date(date);
@@ -73,12 +83,26 @@ const guardar = async () => {
   );
   if (index > -1) {
     events.value[index] = selectEvent.value;
+    console.log("as");
   } else {
     events.value.push(selectEvent.value);
-    const { data, error } = await supabase
-      .from("calendario")
-      .update({ json: events.value })
-      .eq("id", 1);
+  }
+  const { data, error } = await supabase
+    .from("calendario")
+    .update({ json: events.value })
+    .eq("id", 1);
+  if (error) {
+    Notify.create({
+      message: "Error al guardar",
+      color: "negative",
+      icon: "warning",
+    });
+  } else {
+    Notify.create({
+      message: "Guardado correctamente",
+      color: "positive",
+      icon: "check",
+    });
   }
 };
 const recargar = async () => {

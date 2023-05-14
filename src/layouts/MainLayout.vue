@@ -22,14 +22,13 @@
           Volver
         </q-toolbar-title>
 
-        <div style="font-size: 2em; font-weight: bold">
-          ASIC App
+        <div style="font-size: 2em; font-weight: bold; margin-right: 7em">
+          ASIC
 
-          <q-btn :color="noti_color" label="" icon="notifications">
+          <q-btn color="white" label="" icon="notifications" flat>
             <q-menu>
               <q-list style="min-width: 200px">
                 <q-item
-                  clickable
                   v-close-popup
                   v-for="notis in notify"
                   :key="notis.id"
@@ -88,7 +87,6 @@
               {{ link.title }}
             </router-link>
           </li>
-
           <li @click="logout()">
             <q-icon size="md" name="logout" />
             Salir
@@ -143,6 +141,7 @@ const determine = (title, search) => {
     }
   }
 };
+const user = ref(userLocal());
 var essentialLinks = [
   {
     title: "Inicio",
@@ -150,55 +149,117 @@ var essentialLinks = [
     icon: "home",
     link: "home",
   },
-  {
-    title: "Consultas",
-    caption: "Administrar consultas",
-    icon: "event",
-    link: "consultas",
-  },
-  {
-    title: "Historias",
-    caption: "Administrar historias clínicas",
-    icon: "description",
-    link: "historias",
-  },
-  {
-    title: "Personal",
-    caption: "Administrar usuarios y roles",
-    icon: "groups",
-    link: "usuarios",
-  },
-  {
-    title: "Pacientes",
-    caption: "Administrar pacientes",
-    icon: "assist_walker",
-    link: "pacientes",
-  },
-  {
-    title: "Inventario",
-    caption: "Administrar inventario",
-    icon: "inventory",
-    link: "inventario",
-  },
-  {
-    title: "Documentos",
-    caption: "Administrar y generar documentos",
-    icon: "menu_book",
-    link: "documentos",
-  },
-  {
+];
+if (user.value.role_id == 1) {
+  essentialLinks.push(
+    {
+      title: "Consultas",
+      caption: "Administrar consultas",
+      icon: "event",
+      link: "consultas",
+    },
+    {
+      title: "Historias",
+      caption: "Administrar historias clínicas",
+      icon: "description",
+      link: "historias",
+    },
+    {
+      title: "Personal",
+      caption: "Administrar usuarios y roles",
+      icon: "groups",
+      link: "usuarios",
+    },
+    {
+      title: "Pacientes",
+      caption: "Administrar pacientes",
+      icon: "assist_walker",
+      link: "pacientes",
+    },
+    {
+      title: "Inventario",
+      caption: "Administrar inventario",
+      icon: "inventory",
+      link: "inventario",
+    },
+    {
+      title: "Horario laboral",
+      caption: "Administrar permisos, horarios y turnos",
+      icon: "calendar_month",
+      link: "horarios",
+    },
+    {
+      title: "Consultorios",
+      caption: "Administrar consultorios",
+      icon: "meeting_room",
+      link: "consultorios",
+    }
+  );
+}
+if (user.value.role_id == 2) {
+  essentialLinks.push({
     title: "Horario laboral",
     caption: "Administrar permisos, horarios y turnos",
     icon: "calendar_month",
     link: "horarios",
-  },
-  {
-    title: "Consultorios",
-    caption: "Administrar consultorios",
-    icon: "meeting_room",
-    link: "consultorios",
-  },
-];
+  });
+}
+if (user.value.role_id == 3) {
+  essentialLinks.push({
+    title: "Horario laboral",
+    caption: "Administrar permisos, horarios y turnos",
+    icon: "calendar_month",
+    link: "horarios",
+  });
+}
+if (user.value.role_id == 4) {
+  essentialLinks.push({
+    title: "Horario laboral",
+    caption: "Administrar permisos, horarios y turnos",
+    icon: "calendar_month",
+    link: "horarios",
+  });
+}
+if (user.value.role_id == 5) {
+  essentialLinks.push(
+    {
+      title: "Consultas",
+      caption: "Administrar consultas",
+      icon: "event",
+      link: "consultas",
+    },
+    {
+      title: "Historias",
+      caption: "Administrar historias clínicas",
+      icon: "description",
+      link: "historias",
+    },
+    {
+      title: "Pacientes",
+      caption: "Administrar pacientes",
+      icon: "assist_walker",
+      link: "pacientes",
+    },
+    {
+      title: "Inventario",
+      caption: "Administrar inventario",
+      icon: "inventory",
+      link: "inventario",
+    },
+    {
+      title: "Horario laboral",
+      caption: "Administrar permisos, horarios y turnos",
+      icon: "calendar_month",
+      link: "horarios",
+    },
+    {
+      title: "Consultorios",
+      caption: "Administrar consultorios",
+      icon: "meeting_room",
+      link: "consultorios",
+    }
+  );
+}
 const abrir = (link) => {
   router.push(link);
 };
@@ -206,7 +267,7 @@ const logout = () => {
   logoutLocal();
   window.location.href = "/login";
 };
-const user = ref(userLocal());
+
 const leftDrawerOpen = ref(false);
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;

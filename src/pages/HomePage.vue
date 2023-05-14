@@ -14,7 +14,7 @@
   >
     <section>
       <div class="row">
-        <div class="col" style="padding: 1em">
+        <div class="col-12 col-md-6" style="padding: 1em">
           <q-card class="my-card" style="background: white">
             <h5 align="center" style="padding: 1em">
               Usuarios del sistema: {{ usuarios_count }}
@@ -25,10 +25,48 @@
                 style="width: 100%; height: auto; margin: auto"
                 alt="My Awesome Chart"
               />
+              <q-btn
+                label="Ver usuarios"
+                color="primary"
+                class="q-mt-md"
+                @click="router.push('/usuarios')"
+                v-show="user.role_id == 1"
+              />
             </q-card-section>
           </q-card>
         </div>
-        <div class="col" style="padding: 1em">
+        <div class="col-12 col-md-6" style="padding: 1em">
+          <q-card class="my-card" style="background: white">
+            <h5 align="center" style="padding: 1em">Tallas de Camisa</h5>
+            <q-card-section>
+              <div>
+                <img
+                  :src="chartUrlCamisa"
+                  style="width: 100%; height: auto; margin: auto"
+                  alt="My Awesome Chart"
+                />
+              </div>
+              <div>
+                <q-btn
+                  label="Actualizar"
+                  color="green"
+                  icon="autorenew"
+                  @click="tallaCamisas"
+                  style="margin: 1em"
+                />
+                <q-btn
+                  v-show="user.role_id == 1"
+                  label="Descargar Tallas"
+                  color="primary"
+                  icon="get_app"
+                  class="q-mt-md"
+                  @click="descargarTallasGeneral()"
+                />
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+        <div class="col-12 col-md-6" style="padding: 1em">
           <q-card class="my-card" style="background: white">
             <h5 align="center" style="padding: 1em">
               Usuarios por consultorio
@@ -38,6 +76,12 @@
                 :src="chartUrlConsultorios"
                 style="width: 100%; height: auto; margin: auto"
                 alt="Usuarios por consultorio"
+              />
+              <q-btn
+                label="Actualizar"
+                color="green"
+                @click="segundo_chat_recarga"
+                style="margin: 1em"
               />
             </q-card-section>
           </q-card>
@@ -64,6 +108,9 @@ import supabase from "src/supabase";
 import { Notify } from "quasar";
 import { useRouter } from "vue-router";
 import QuickChart from "quickchart-js";
+import { saveAs } from "file-saver";
+import { logoutLocal, userLocal } from "../composables/localStorage";
+const user = ref(userLocal());
 
 const router = useRouter();
 const usuarios_count = ref(0);
@@ -79,6 +126,7 @@ const randomColor = () => {
 onMounted(async () => {
   recargar();
   segundo_chat_recarga();
+  tallaCamisas();
 });
 
 const recargar = async () => {
@@ -199,6 +247,111 @@ const segundo_chat_recarga = async () => {
       },
     });
     chartUrlConsultorios.value = chart.getUrl();
+  }
+};
+const chartUrlCamisa = ref("");
+const tallaCamisas = async () => {
+  const { data: count_talla, error } = await supabase
+    .from("Usuarios")
+    .select("talla_camisa");
+  if (error) {
+    Notify.create({
+      message: "Compruebe su conexión a internet",
+      color: "red",
+      icon: "report_problem",
+    });
+  } else {
+    const talla_camisa = [];
+    for (let i = 0; i < count_talla.length; i++) {
+      if (count_talla[i].talla_camisa != null) {
+        talla_camisa.push(count_talla[i].talla_camisa);
+      }
+    }
+    const talla_camisa_count = talla_camisa.reduce(function (obj, b) {
+      obj[b] = ++obj[b] || 1;
+      return obj;
+    }, {});
+    console.log(talla_camisa_count);
+    const chart = new QuickChart();
+    chart.setConfig({
+      type: "pie",
+      data: {
+        labels: Object.keys(talla_camisa_count),
+        datasets: [
+          {
+            label: "Colors",
+            data: Object.values(talla_camisa_count),
+            backgroundColor: [
+              "#42a5f5",
+              "#3f51b5",
+              "#009688",
+              "#4caf50",
+              "#ffeb3b",
+              "#ff9800",
+              "#f44336",
+            ],
+          },
+        ],
+      },
+    });
+    chartUrlCamisa.value = chart.getUrl();
+  }
+};
+const descargarTallasGeneral = async () => {
+  const { data: tallas, error } = await supabase
+    .from("Usuarios")
+    .select("talla_camisa,talla_pantalon,talla_zapatos");
+  if (error) {
+    Notify.create({
+      message: "Compruebe su conexión a internet",
+      color: "red",
+      icon: "report_problem",
+    });
+  } else {
+    const camisas = [];
+    const pantalones = [];
+    const zapatos = [];
+    for (let i = 0; i < tallas.length; i++) {
+      if (tallas[i].talla_camisa != null) {
+        camisas.push(tallas[i].talla_camisa);
+      }
+      if (tallas[i].talla_pantalon != null) {
+        pantalones.push(tallas[i].talla_pantalon);
+      }
+      if (tallas[i].talla_zapatos != null) {
+        zapatos.push(tallas[i].talla_zapatos);
+      }
+    }
+    const camisas_count = camisas.reduce(function (obj, b) {
+      obj[b] = ++obj[b] || 1;
+      return obj;
+    }, {});
+    const pantalones_count = pantalones.reduce(function (obj, b) {
+      obj[b] = ++obj[b] || 1;
+      return obj;
+    }, {});
+    const zapatos_count = zapatos.reduce(function (obj, b) {
+      obj[b] = ++obj[b] || 1;
+      return obj;
+    }, {});
+
+    //incluir saltos de linea
+    const data_csv = `\n,Talla camisa, Cantidad\n, ${Object.keys(
+      camisas_count
+    ).map(
+      (item) => item + "," + camisas_count[item] + "\n"
+    )}\n,Talla pantalon, Cantidad\n,${Object.keys(pantalones_count).map(
+      (item) => item + "," + pantalones_count[item] + "\n"
+    )}\n,Talla zapatos, Cantidad\n,${Object.keys(zapatos_count).map(
+      (item) => item + "," + zapatos_count[item] + "\n"
+    )}`;
+
+    console.log(data_csv);
+    const csvContent = "data:text/csv;charset=utf-8," + data_csv;
+    const encodedUri = encodeURI(csvContent);
+    window.open(encodedUri);
+    // const blob = new Blob([data_csv], { type: "text/csv;charset=utf-8;" });
+    //saveAs(blob, "data_movimientos.csv");
   }
 };
 </script>

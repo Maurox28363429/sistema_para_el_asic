@@ -15,7 +15,7 @@
     <section
       :style="
         !$q.screen.lt.md
-          ? 'width: 80%; height: 80%'
+          ? 'width: 95%; height: 95%'
           : 'width: 100%; height: 100%'
       "
     >
@@ -41,6 +41,7 @@
                 <th>Cedula</th>
                 <th :class="!$q.screen.lt.md ? '' : 'hide'">RIF</th>
                 <th>Rol</th>
+                <th>Años de servicio</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -62,15 +63,38 @@
                   <span v-if="user.role_id == 5">Profesional de la salud</span>
                 </td>
                 <td>
+                  <span v-if="user.fecha_entrada != null">
+                    {{ años_de_servicio(user.fecha_entrada) }} años
+                  </span>
+                  <span v-else>Sin fecha de ingreso</span>
+                </td>
+                <td>
                   <q-btn
-                    @click="documentGet(user)"
                     class="glossy"
                     rounded
                     color="green"
                     style="margin: 1em 0.5em"
-                    :label="$q.screen.lt.md ? '' : 'Constancia'"
+                    :label="$q.screen.lt.md ? '' : 'Formato'"
                     icon="picture_as_pdf"
-                  />
+                  >
+                    <q-menu>
+                      <q-list style="min-width: 200px">
+                        <q-item
+                          clickable
+                          v-close-popup
+                          @click="documentGet(user)"
+                        >
+                          <q-item-section>Constancia de trabajo</q-item-section>
+                        </q-item>
+                        <q-item clickable v-close-popup>
+                          <q-item-section>Documento 2</q-item-section>
+                        </q-item>
+                        <q-item clickable v-close-popup>
+                          <q-item-section>Documento 3</q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-btn>
                   <q-btn
                     @click="editUser(user)"
                     class="glossy"
@@ -148,6 +172,23 @@ onMounted(async () => {
   await counter_paginate();
   await getData();
 });
+const años_de_servicio = (fecha_ingreso) => {
+  if (fecha_ingreso == null) {
+    return "Sin fecha de ingreso";
+  }
+  let fecha_actual = new Date();
+  let fecha_ingreso_date = new Date(fecha_ingreso);
+  let años = fecha_actual.getFullYear() - fecha_ingreso_date.getFullYear();
+  let meses = fecha_actual.getMonth() - fecha_ingreso_date.getMonth();
+  let dias = fecha_actual.getDate() - fecha_ingreso_date.getDate();
+  if (meses < 0 || (meses === 0 && dias < 0)) {
+    años--;
+  }
+  if (años == 0) {
+    return "Menos de un año";
+  }
+  return años;
+};
 const counter_paginate = async () => {
   //counter usuarios
   const { data: count_user, error } = await supabase
@@ -170,7 +211,7 @@ const getData = async () => {
   if (search_item.value != null) {
     var { data, error } = await supabase
       .from("Usuarios")
-      .select("*")
+      .select("*,roles(name)")
       .like("cedula", "%" + search_item.value + "%")
       .range(
         paginate.value.perPage * (paginate.value.currentPage - 1),
@@ -179,7 +220,7 @@ const getData = async () => {
   } else {
     var { data, error } = await supabase
       .from("Usuarios")
-      .select("*")
+      .select("*,roles(name)")
       .range(
         paginate.value.perPage * (paginate.value.currentPage - 1),
         paginate.value.perPage * paginate.value.currentPage
@@ -260,7 +301,59 @@ const editUser = (user) => {
   router.push("/editar_user");
 };
 const exportData = async () => {
-  const { data, error } = await supabase.from("Usuarios").select("*").csv();
+  const { data, error } = await supabase
+    .from("Usuarios")
+    .select(
+      "id,nombre,apellido,roles(name),cedula,rif,telefono,consultorios(nombre),talla_pantalon,talla_camisa,talla_zapatos,fecha_entrada"
+    );
+
+  let data_csv = "";
+  let obtener_consultorio = (consultorio) => {
+    if (consultorio == null) {
+      return "Sin consultorio";
+    } else {
+      return consultorio.nombre;
+    }
+  };
+  let obtener_rol = (rol) => {
+    if (rol == null) {
+      return "Sin rol";
+    } else {
+      return rol.name;
+    }
+  };
+  data_csv +=
+    "id,nombre,apellido,rol,cedula,rif,telefono,consultorio,talla de pantalon,talla de camisa,talla de zapatos, fecha de ingreso,años de servicio \n";
+  data.forEach((element) => {
+    data_csv +=
+      element.id +
+      "," +
+      element.nombre +
+      "," +
+      element.apellido +
+      "," +
+      obtener_rol(element.roles) +
+      "," +
+      element.cedula +
+      "," +
+      element.rif +
+      "," +
+      element.telefono +
+      "," +
+      obtener_consultorio(element.consultorios) +
+      "," +
+      element.talla_pantalon +
+      "," +
+      element.talla_camisa +
+      "," +
+      element.talla_zapatos +
+      "," +
+      element.fecha_entrada +
+      "," +
+      años_de_servicio(element.fecha_entrada) +
+      "," +
+      "\n";
+  });
 
   if (error) {
     Notify.create({
@@ -274,8 +367,8 @@ const exportData = async () => {
       color: "green",
       icon: "check",
     });
-    const blob = new Blob([data], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "data.csv");
+    const blob = new Blob([data_csv], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "data_movimientos.csv");
   }
 };
 const documentGet = async (user) => {

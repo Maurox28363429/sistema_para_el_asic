@@ -49,7 +49,7 @@
                 style="margin: 1em"
               />
               <q-btn
-                @click="cancel"
+                to="consultorios"
                 label="Cancelar"
                 color="red"
                 class="col-12"
